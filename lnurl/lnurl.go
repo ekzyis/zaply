@@ -3,9 +3,14 @@ package lnurl
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
+	"net/url"
 	"strconv"
+	"strings"
 
+	"github.com/btcsuite/btcutil/bech32"
+	"github.com/ekzyis/zaply/env"
 	"github.com/ekzyis/zaply/lightning"
 	"github.com/labstack/echo/v4"
 )
@@ -26,7 +31,7 @@ func payRequest(c echo.Context) error {
 	return c.JSON(
 		http.StatusOK,
 		map[string]any{
-			"callback":       fmt.Sprintf("%s/.well-known/lnurlp/%s/pay", c.Request().Host, name),
+			"callback":       fmt.Sprintf("%s/.well-known/lnurlp/%s/pay", env.PublicUrl, name),
 			"minSendable":    MIN_SENDABLE_AMOUNT,
 			"maxSendable":    MAX_SENDABLE_AMOUNT,
 			"metadata":       fmt.Sprintf("[[\"text/plain\",\"paying %s\"]]", name),
@@ -71,4 +76,23 @@ func pay(ln lightning.Lightning) echo.HandlerFunc {
 
 func lnurlError(c echo.Context, code int, err error) error {
 	return c.JSON(code, map[string]any{"status": "ERROR", "error": err.Error()})
+}
+
+func Encode(base string, parts ...string) string {
+	u, err := url.JoinPath(base, parts...)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	bech32Url, err := bech32.ConvertBits([]byte(u), 8, 5, true)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	lnurl, err := bech32.Encode("lnurl", bech32Url)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return strings.ToUpper(lnurl)
 }

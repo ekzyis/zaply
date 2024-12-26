@@ -3,6 +3,7 @@ module github.com/ekzyis/zaply
 go 1.23.4
 
 require (
+	github.com/btcsuite/btcutil v1.0.2 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/labstack/echo/v4 v4.13.3 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect

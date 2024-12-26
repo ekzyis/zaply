@@ -11,6 +11,7 @@ import (
 
 var (
 	Port                       int
+	PublicUrl                  string
 	PhoenixdURL                string
 	PhoenixdLimitedAccessToken string
 	CommitLongSha              string
@@ -22,6 +23,7 @@ func Load(filenames ...string) error {
 		return err
 	}
 	flag.IntVar(&Port, "PORT", 4444, "Server port")
+	flag.StringVar(&PublicUrl, "PUBLIC_URL", "", "Base URL")
 	flag.StringVar(&PhoenixdURL, "PHOENIXD_URL", "", "Phoenixd URL")
 	flag.StringVar(&PhoenixdLimitedAccessToken, "PHOENIXD_LIMITED_ACCESS_TOKEN", "", "Phoenixd limited access token")
 	return nil
