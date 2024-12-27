@@ -20,10 +20,14 @@ type Phoenixd struct {
 	accessToken        string
 	limitedAccessToken string
 	webhookUrl         string
+
+	paymentsChan chan *lightning.Invoice
 }
 
 func NewPhoenixd(opts ...func(*Phoenixd) *Phoenixd) *Phoenixd {
-	ln := &Phoenixd{}
+	ln := &Phoenixd{
+		paymentsChan: make(chan *lightning.Invoice),
+	}
 	for _, opt := range opts {
 		opt(ln)
 	}
@@ -153,18 +157,21 @@ func (p *Phoenixd) GetInvoice(paymentHash string) (*lightning.Invoice, error) {
 	}, nil
 }
 
-func (p *Phoenixd) WebhookHandler(c echo.Context) error {
-	go func() {
-		var webhook struct {
-			Type        string `json:"type"`
-			AmountSat   int64  `json:"amountSat"`
-			PaymentHash string `json:"paymentHash"`
-		}
-		if err := c.Bind(&webhook); err != nil {
-			c.Logger().Error(err)
-			return
-		}
+func (p *Phoenixd) IncomingPayments() chan *lightning.Invoice {
+	return p.paymentsChan
+}
 
+func (p *Phoenixd) WebhookHandler(c echo.Context) error {
+	var webhook struct {
+		Type        string `json:"type"`
+		AmountSat   int64  `json:"amountSat"`
+		PaymentHash string `json:"paymentHash"`
+	}
+	if err := c.Bind(&webhook); err != nil {
+		return err
+	}
+
+	go func() {
 		inv, err := p.GetInvoice(webhook.PaymentHash)
 		if err != nil {
 			c.Logger().Error(err)
@@ -176,6 +183,8 @@ func (p *Phoenixd) WebhookHandler(c echo.Context) error {
 			inv.PaymentHash, inv.Msats, inv.Description,
 			inv.CreatedAt.Format(time.RFC3339), inv.ConfirmedAt.Format(time.RFC3339),
 		)
+
+		p.paymentsChan <- inv
 	}()
 
 	return c.NoContent(http.StatusOK)

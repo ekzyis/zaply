@@ -7,6 +7,7 @@ import (
 	"github.com/ekzyis/zaply/env"
 	"github.com/ekzyis/zaply/lightning/phoenixd"
 	"github.com/ekzyis/zaply/lnurl"
+	"github.com/ekzyis/zaply/pages"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -40,6 +41,11 @@ func NewServer() *Server {
 	s.POST(webhookPath, p.WebhookHandler)
 
 	lnurl.Router(s.Echo, p)
+
+	s.Static("/", "public/")
+
+	s.GET("/overlay", pages.OverlayHandler)
+	s.GET("/overlay/sse", sseHandler(p.IncomingPayments()))
 
 	return s
 }

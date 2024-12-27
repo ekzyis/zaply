@@ -1,0 +1,32 @@
+package pages
+
+templ Overlay() {
+	<html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>zaply</title>
+            <script src={ GetBaseUrl(ctx) + "/js/htmx.min.js" } integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+            <script src={ GetBaseUrl(ctx) + "/js/htmx-sse.js" } crossorigin="anonymous"></script>
+            if GetEnv(ctx) == "development" {
+                <script src={ GetBaseUrl(ctx) + "/js/livereload.js" }></script>
+            }
+            <script>
+                const sse = new EventSource("/overlay/sse");
+                sse.onmessage = (event) => {
+                    // console.log("event", event)
+                };
+                sse.addEventListener("zap", event => {
+                    let inv
+                    try {
+                        inv = JSON.parse(event.data)
+                    } catch(err) {
+                        console.error("error parsing zap event", err)
+                        return
+                    }
+                    console.log("zap received:", inv.paymentHash, inv.msats, inv.description)
+                })
+            </script>
+        </head>
+    </html>
+}

@@ -1,2 +1,4 @@
 .env
 zaply
+*_templ.go
+__livereload
