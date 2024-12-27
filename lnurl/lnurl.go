@@ -27,11 +27,15 @@ func Router(e *echo.Echo, ln lightning.Lightning) {
 }
 
 func payRequest(c echo.Context) error {
-	name := c.Param("name")
+	callback, err := url.JoinPath(env.PublicUrl, "/.well-known/lnurlp/", c.Param("name"), "/pay")
+	if err != nil {
+		return err
+	}
+
 	return c.JSON(
 		http.StatusOK,
 		map[string]any{
-			"callback":       fmt.Sprintf("%s/.well-known/lnurlp/%s/pay", env.PublicUrl, name),
+			"callback":       callback,
 			"minSendable":    MIN_SENDABLE_AMOUNT,
 			"maxSendable":    MAX_SENDABLE_AMOUNT,
 			"metadata":       fmt.Sprintf("[[\"text/plain\",\"paying %s\"]]", name),
