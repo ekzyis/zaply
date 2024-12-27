@@ -1,6 +1,9 @@
 package pages
 
-templ Overlay() {
+import "github.com/skip2/go-qrcode"
+import "encoding/base64"
+
+templ Overlay(lnurl string) {
 	<html>
         <head>
             <meta charset="UTF-8">
@@ -25,6 +28,22 @@ templ Overlay() {
                     }, 60_000)
                 })
             </script>
+            <div class="bg-white fixed bottom-0 left-0 text-center p-3">
+                <img src={ "data:image/jpeg;base64," + qrEncode(lnurl) }/>
+                <div>scan to zap message</div>
+            </div>
         </body>
     </html>
+}
+
+func qrEncode(value string) string {
+    q, err := qrcode.New(value, qrcode.Medium)
+    q.DisableBorder = true
+
+    png, err := q.PNG(256)
+	if err != nil {
+		return ""
+	}
+
+    return base64.StdEncoding.EncodeToString([]byte(png))
 }

@@ -27,8 +27,10 @@ func GetEnv(ctx context.Context) string {
 	return "development"
 }
 
-func OverlayHandler(c echo.Context) error {
-	return render(c, http.StatusOK, Overlay())
+func OverlayHandler(lnurl string) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		return render(c, http.StatusOK, Overlay(lnurl))
+	}
 }
 
 func render(ctx echo.Context, statusCode int, t templ.Component) error {

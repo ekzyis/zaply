@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net/url"
 
@@ -44,7 +45,9 @@ func NewServer() *Server {
 
 	s.Static("/", "public/")
 
-	s.GET("/overlay", pages.OverlayHandler)
+	s.GET("/overlay", pages.OverlayHandler(
+		lnurl.Encode(fmt.Sprintf("%s/.well-known/lnurlp/%s", env.PublicUrl, "SNL")),
+	))
 	s.GET("/overlay/sse", sseHandler(p.IncomingPayments()))
 
 	return s
