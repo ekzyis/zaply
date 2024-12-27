@@ -1,6 +1,9 @@
 package server
 
 import (
+	"log"
+	"net/url"
+
 	"github.com/ekzyis/zaply/env"
 	"github.com/ekzyis/zaply/lightning/phoenixd"
 	"github.com/ekzyis/zaply/lnurl"
@@ -22,10 +25,19 @@ func NewServer() *Server {
 		CustomTimeFormat: "2006-01-02 15:04:05.00000-0700",
 	}))
 
+	webhookPath := "/overlay/webhook"
+	webhookUrl, err := url.JoinPath(env.PublicUrl, webhookPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	p := phoenixd.NewPhoenixd(
 		phoenixd.WithPhoenixdURL(env.PhoenixdURL),
 		phoenixd.WithPhoenixdLimitedAccessToken(env.PhoenixdLimitedAccessToken),
+		phoenixd.WithPhoenixdWebhookUrl(webhookUrl),
 	)
+
+	s.POST(webhookPath, p.WebhookHandler)
 
 	lnurl.Router(s.Echo, p)
 
