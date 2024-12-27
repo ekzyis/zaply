@@ -38,7 +38,7 @@ func payRequest(c echo.Context) error {
 			"callback":       callback,
 			"minSendable":    MIN_SENDABLE_AMOUNT,
 			"maxSendable":    MAX_SENDABLE_AMOUNT,
-			"metadata":       fmt.Sprintf("[[\"text/plain\",\"paying %s\"]]", name),
+			"metadata":       lnurlMetadata(c),
 			"tag":            "payRequest",
 			"commentAllowed": MAX_COMMENT_LENGTH,
 		},
@@ -76,6 +76,14 @@ func pay(ln lightning.Lightning) echo.HandlerFunc {
 			},
 		)
 	}
+}
+
+func lnurlMetadata(c echo.Context) string {
+	s := "["
+	s += fmt.Sprintf("[\"text/plain\",\"Paying %s@%s\"]", c.Param("name"), c.Request().Host)
+	s += fmt.Sprintf(",[\"text/identifier\",\"%s@%s\"]", c.Param("name"), c.Request().Host)
+	s += "]"
+	return s
 }
 
 func lnurlError(c echo.Context, code int, err error) error {
