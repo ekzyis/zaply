@@ -132,7 +132,7 @@ func (p *Phoenixd) GetInvoice(paymentHash string) (*lightning.Invoice, error) {
 	var response struct {
 		PaymentHash string `json:"paymentHash"`
 		Preimage    string `json:"preimage"`
-		Msats       int64  `json:"receivedSat"`
+		Sats        int64  `json:"receivedSat"`
 		Description string `json:"description"`
 		CreatedAt   int64  `json:"createdAt"`
 		ConfirmedAt int64  `json:"completedAt"`
@@ -150,7 +150,7 @@ func (p *Phoenixd) GetInvoice(paymentHash string) (*lightning.Invoice, error) {
 	return &lightning.Invoice{
 		PaymentHash: response.PaymentHash,
 		Preimage:    response.Preimage,
-		Msats:       response.Msats,
+		Msats:       response.Sats * 1_000,
 		Description: response.Description,
 		CreatedAt:   createdAt,
 		ConfirmedAt: confirmedAt,
