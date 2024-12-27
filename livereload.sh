@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 PID=$(pidof zaply)
-DIRS="env/ lightning/ lnurl/ pages/ server/"
+DIRS="components/ env/ lightning/ lnurl/ pages/ server/"
 
 set -e
 

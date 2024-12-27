@@ -1,0 +1,30 @@
+package components
+
+import (
+    "fmt"
+
+    "github.com/ekzyis/zaply/lightning"
+)
+
+templ Zap(inv *lightning.Invoice) {
+    <div class="bg-[#212529] w-fit zap-animate-in border border-[#212529] m-3 rounded-lg" id={ inv.PaymentHash }>
+        <div class="flex flex-row gap-3 items-center">
+            <svg width="32" height="32" viewBox="0 0 200 307" fill="#fada5e" xmlns="http://www.w3.org/2000/svg" class="ps-3">
+                <path d="M56 0L107.606 131H90.2129H89L1.52588e-05 131L177 307L106.979 165H121H160H200L56 0Z"/>
+            </svg>
+            <div class="flex flex-col pe-3 py-1">
+                <div class="text-lg text-[#f0f0f0]">{ inv.Description }</div>
+                <div class="text-sm text-slate-300">{ fmt.Sprintf("%.8s / %s", inv.PaymentHash, humanize(inv.Msats)) }</div>
+            </div>
+        </div>
+    </div>
+}
+
+func humanize(msats int64) string {
+    sats := msats / 1000
+    if sats == 1 {
+        return fmt.Sprintf("%d sat", sats)
+    } else {
+        return fmt.Sprintf("%d sats", sats)
+    }
+}

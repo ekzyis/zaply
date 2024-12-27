@@ -2,17 +2,19 @@ package server
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"time"
 
+	"github.com/a-h/templ"
+	"github.com/ekzyis/zaply/components"
 	"github.com/ekzyis/zaply/lightning"
 	"github.com/labstack/echo/v4"
 )
 
 type Event struct {
+	Id    []byte
 	Event []byte
 	Data  []byte
 }
@@ -26,6 +28,10 @@ func (ev *Event) MarshalTo(w io.Writer) error {
 		if _, err := fmt.Fprintf(w, "data: %s\n", line); err != nil {
 			return err
 		}
+	}
+
+	if _, err := fmt.Fprintf(w, "id: %s\n", ev.Id); err != nil {
+		return err
 	}
 
 	if _, err := fmt.Fprint(w, "\n"); err != nil {
@@ -61,14 +67,17 @@ func sseHandler(invSrc chan *lightning.Invoice) echo.HandlerFunc {
 					return err
 				}
 			case inv := <-invSrc:
-				data, err := json.Marshal(inv)
-				if err != nil {
+				buf := templ.GetBuffer()
+				defer templ.ReleaseBuffer(buf)
+
+				if err := components.Zap(inv).Render(c.Request().Context(), buf); err != nil {
 					return err
 				}
 
 				event := Event{
+					Id:    []byte(inv.PaymentHash),
 					Event: []byte("zap"),
-					Data:  data,
+					Data:  buf.Bytes(),
 				}
 
 				log.Printf("sending zap event: %s", inv.PaymentHash)
